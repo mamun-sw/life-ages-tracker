@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { Button } from './ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog'
+import { Input } from './ui/input'
+import { Label } from './ui/label'
 import type { Category } from '../types'
 
 interface AddItemModalProps {
@@ -34,40 +38,25 @@ export function AddItemModal({ categories, onAdd, onClose }: AddItemModalProps) 
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-sm px-4 pb-4 sm:pb-0"
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
-          <h2 className="font-medium text-stone-900">Add new item</h2>
-          <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
-          >
-            ✕
-          </button>
-        </div>
+    <Dialog open onOpenChange={(open: boolean) => { if (!open) onClose() }}>
+      <DialogContent className="w-full max-w-md sm:rounded-2xl rounded-t-2xl rounded-b-none sm:rounded-b-2xl p-0 gap-0 overflow-hidden shadow-xl fixed bottom-0 sm:bottom-auto sm:top-1/2 left-1/2 -translate-x-1/2 sm:-translate-y-1/2 translate-y-0 max-h-[92dvh] flex flex-col">
+        <DialogHeader className="px-5 py-4 border-b border-border shrink-0">
+          <DialogTitle className="font-semibold text-foreground text-base">Add new item</DialogTitle>
+        </DialogHeader>
 
-        {/* Body */}
-        <div className="px-5 py-5 space-y-4">
-          {/* Name */}
-          <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1.5">Name</label>
-            <input
-              type="text"
+        <div className="px-5 py-5 space-y-4 overflow-y-auto flex-1">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Name</Label>
+            <Input
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Yusuf, iPhone 15, Started new job..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-300 focus:border-stone-300 transition"
               autoFocus
             />
           </div>
 
-          {/* Category */}
-          <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1.5">Category</label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Category</Label>
             <div className="flex flex-wrap gap-2">
               {categories.map(cat => (
                 <button
@@ -75,8 +64,8 @@ export function AddItemModal({ categories, onAdd, onClose }: AddItemModalProps) 
                   onClick={() => setCategoryId(cat.id)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
                     categoryId === cat.id
-                      ? 'bg-stone-900 border-stone-900 text-white'
-                      : 'border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50'
+                      ? 'bg-foreground border-foreground text-background'
+                      : 'border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground bg-card'
                   }`}
                 >
                   <span>{cat.emoji}</span>
@@ -86,56 +75,49 @@ export function AddItemModal({ categories, onAdd, onClose }: AddItemModalProps) 
             </div>
           </div>
 
-          {/* Start date (Gregorian only) */}
-          <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1.5">
-              Start date <span className="text-stone-300 font-normal">(Gregorian)</span>
-            </label>
-            <input
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">
+              Start date <span className="text-muted-foreground/40 font-normal">(Gregorian)</span>
+            </Label>
+            <Input
               type="date"
               value={startDate}
               max={today}
               onChange={e => setStartDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-300 focus:border-stone-300 transition"
             />
           </div>
 
-          {/* Notes (optional) */}
-          <div>
-            <label className="block text-xs font-medium text-stone-500 mb-1.5">
-              Notes <span className="text-stone-300 font-normal">(optional)</span>
-            </label>
-            <input
-              type="text"
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">
+              Notes <span className="text-muted-foreground/40 font-normal">(optional)</span>
+            </Label>
+            <Input
               value={notes}
               onChange={e => setNotes(e.target.value)}
               placeholder="Any extra details..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-300 focus:border-stone-300 transition"
             />
           </div>
 
-          {error && (
-            <p className="text-xs text-red-500">{error}</p>
-          )}
+          {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
 
-        {/* Footer */}
-        <div className="px-5 pb-5 flex gap-2">
-          <button
+        <DialogFooter className="px-5 pb-5 pt-3 flex-row gap-2 border-t border-border bg-background shrink-0 rounded-none mx-0 mb-0">
+          <Button
+            variant="outline"
+            className="flex-1 rounded-xl"
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            className="flex-1 rounded-xl bg-foreground hover:bg-foreground/90 text-background"
             onClick={handleSubmit}
             disabled={saving}
-            className="flex-1 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-medium hover:bg-stone-800 disabled:opacity-50 transition-colors"
           >
             {saving ? 'Saving...' : 'Add item'}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

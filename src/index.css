@@ -15,6 +15,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Smooth dark/light mode transitions */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
 body {
   font-family: var(--font-sans);
 }
@@ -55,6 +60,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .duration-200 {
   animation-duration: 200ms;
+}
+
+/* Hide scrollbar while keeping scroll functionality */
+.no-scrollbar {
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;                /* Chrome/Safari */
 }
 
 @theme inline {

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Icon } from './ui/Icon'
+import { Button } from './ui/button'
 import { NavBar } from './NavBar'
 import { ItemCard } from './ItemCard'
 import { AddItemModal } from './AddItemModal'
@@ -32,14 +34,11 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
     startDate: string
     notes: string
   }) => {
-    await add({
-      ...data,
-      createdAt: new Date().toISOString(),
-    })
+    await add({ ...data, createdAt: new Date().toISOString() })
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-background">
       <NavBar
         user={user}
         calendarMode={calendarMode}
@@ -49,83 +48,87 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
         onSignOut={onSignOut}
       />
 
-      <main className="max-w-2xl mx-auto px-4 py-6">
+      <main className="max-w-2xl mx-auto px-4 py-5 sm:py-6">
         {/* Filter chips + actions */}
-        <div className="flex items-center gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => setFilterCatId('all')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-              filterCatId === 'all'
-                ? 'bg-stone-900 border-stone-900 text-white'
-                : 'border-stone-200 text-stone-500 hover:border-stone-300 bg-white'
-            }`}
-          >
-            All
-          </button>
-          {categories.map(cat => (
+        <div className="flex items-center gap-2 mb-5 sm:mb-6">
+          {/* Scrollable chip row */}
+          <div className="flex items-center gap-2 overflow-x-auto flex-1 min-w-0 pb-0.5 no-scrollbar">
             <button
-              key={cat.id}
-              onClick={() => setFilterCatId(cat.id)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                filterCatId === cat.id
-                  ? 'bg-stone-900 border-stone-900 text-white'
-                  : 'border-stone-200 text-stone-500 hover:border-stone-300 bg-white'
+              onClick={() => setFilterCatId('all')}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                filterCatId === 'all'
+                  ? 'bg-foreground border-foreground text-background'
+                  : 'border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground bg-card'
               }`}
             >
-              <span>{cat.emoji}</span>
-              <span>{cat.label}</span>
+              All
             </button>
-          ))}
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setFilterCatId(cat.id)}
+                className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  filterCatId === cat.id
+                    ? 'bg-foreground border-foreground text-background'
+                    : 'border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground bg-card'
+                }`}
+              >
+                <span>{cat.emoji}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
 
-          <div className="ml-auto flex gap-2">
-            <button
+          {/* Action buttons — always visible, shrink-0 */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setShowCatManager(true)}
-              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
               title="Manage categories"
+              className="text-muted-foreground hover:text-foreground"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <circle cx="8" cy="8" r="2" />
-                <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" />
-              </svg>
-            </button>
-            <button
+              <Icon name="settings" className="text-base" />
+            </Button>
+            <Button
+              size="sm"
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium transition-colors"
+              className="rounded-full gap-1.5 bg-foreground hover:bg-foreground/90 text-background shadow-sm"
             >
-              <span className="text-sm leading-none">+</span>
-              Add
-            </button>
+              <Icon name="plus" className="text-sm" />
+              <span className="hidden xs:inline sm:inline">Add</span>
+            </Button>
           </div>
         </div>
 
         {/* Items list */}
         {itemsLoading ? (
-          <div className="py-20 text-center">
-            <div className="w-6 h-6 border-2 border-stone-200 border-t-stone-500 rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-sm text-stone-400">Loading your items...</p>
+          <div className="py-24 text-center">
+            <div className="w-6 h-6 border-2 border-border border-t-foreground rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">Loading your items...</p>
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="py-20 text-center">
-            <div className="text-4xl mb-4">
+          <div className="py-20 sm:py-24 text-center px-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-muted text-3xl mb-5">
               {filterCatId === 'all' ? '📋' : categories.find(c => c.id === filterCatId)?.emoji ?? '📋'}
             </div>
-            <p className="text-stone-500 text-sm mb-1">
+            <p className="text-foreground font-medium text-sm mb-1">
               {filterCatId === 'all'
                 ? 'Nothing tracked yet'
                 : `No ${categories.find(c => c.id === filterCatId)?.label.toLowerCase() ?? 'items'} tracked`}
             </p>
-            <p className="text-stone-400 text-xs mb-5">
+            <p className="text-muted-foreground text-xs mb-6">
               Add your first item to start tracking its age.
             </p>
-            <button
+            <Button
               onClick={() => setShowAddModal(true)}
-              className="px-5 py-2.5 rounded-full bg-stone-900 text-white text-sm font-medium hover:bg-stone-800 transition-colors"
+              className="rounded-full bg-foreground hover:bg-foreground/90 text-background px-5 shadow-sm"
             >
               Add item
-            </button>
+            </Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {filteredItems.map(item => (
               <ItemCard
                 key={item.id}
@@ -135,8 +138,8 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
                 onDelete={remove}
               />
             ))}
-            <p className="text-center text-[11px] text-stone-300 pt-2">
-              {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'} · ages shown in {calendarMode === 'gregorian' ? 'Gregorian' : 'Hijri'} calendar
+            <p className="text-center text-[11px] text-muted-foreground/50 pt-3 pb-6">
+              {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'} · {calendarMode === 'gregorian' ? 'Gregorian' : 'Hijri'} calendar
             </p>
           </div>
         )}

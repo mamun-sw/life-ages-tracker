@@ -1,3 +1,15 @@
+import { SunIcon, MoonIcon } from 'lucide-react'
+import { Icon } from './ui/Icon'
+import { Button } from './ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from './ui/dropdown-menu'
+import { useTheme } from '../lib/theme'
 import type { AppUser, CalendarMode } from '../types'
 
 interface NavBarProps {
@@ -8,54 +20,72 @@ interface NavBarProps {
 }
 
 export function NavBar({ user, calendarMode, onToggleCalendar, onSignOut }: NavBarProps) {
-  return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-stone-100">
-      <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
-        <h1 className="font-serif text-xl text-stone-900 tracking-tight">Life Ages</h1>
+  const { theme, toggle } = useTheme()
 
-        <div className="flex items-center gap-2">
-          {/* Calendar toggle */}
-          <button
+  return (
+    <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+        <h1 className="font-serif text-xl text-foreground tracking-tight">Life Ages</h1>
+
+        <div className="flex items-center gap-1.5">
+          {/* Calendar toggle — icon only on mobile, icon + label on sm+ */}
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onToggleCalendar}
             title={`Switch to ${calendarMode === 'gregorian' ? 'Hijri' : 'Gregorian'}`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 bg-stone-50 hover:bg-stone-100 transition-colors text-xs font-medium text-stone-700"
+            className="gap-1.5 rounded-lg text-foreground/70 hover:text-foreground px-2 sm:px-3"
           >
-            <span>{calendarMode === 'gregorian' ? '📅' : '🌙'}</span>
-            <span className="uppercase tracking-wide text-[10px]">
+            <Icon name={calendarMode === 'gregorian' ? 'calendar' : 'moon'} className="text-sm" />
+            <span className="hidden sm:inline uppercase tracking-wide text-[10px] font-semibold">
               {calendarMode === 'gregorian' ? 'Gregorian' : 'Hijri'}
             </span>
-          </button>
+          </Button>
 
-          {/* User avatar + sign out */}
-          <div className="relative group">
-            <button className="flex items-center gap-2 rounded-full focus:outline-none">
+          {/* Theme toggle */}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={toggle}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark'
+              ? <SunIcon className="size-4" />
+              : <MoonIcon className="size-4" />
+            }
+          </Button>
+
+          {/* User menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="rounded-full focus:outline-none ml-0.5">
               {user.photoURL ? (
                 <img
                   src={user.photoURL}
                   alt={user.displayName}
-                  className="w-8 h-8 rounded-full border border-stone-200"
+                  className="w-8 h-8 rounded-full border border-border"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-medium text-stone-600">
+                <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center text-xs font-semibold text-foreground">
                   {user.displayName.charAt(0).toUpperCase()}
                 </div>
               )}
-            </button>
-            {/* Dropdown */}
-            <div className="absolute right-0 top-10 w-44 bg-white border border-stone-200 rounded-xl shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-150 z-50">
-              <div className="px-3 py-2.5 border-b border-stone-100">
-                <p className="text-xs font-medium text-stone-800 truncate">{user.displayName}</p>
-                <p className="text-[11px] text-stone-400 truncate">{user.email}</p>
-              </div>
-              <button
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel className="flex-col items-start gap-0.5 px-3 py-2.5">
+                <p className="text-xs font-semibold text-foreground truncate">{user.displayName}</p>
+                <p className="text-[11px] text-muted-foreground truncate font-normal">{user.email}</p>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
                 onClick={onSignOut}
-                className="w-full text-left px-3 py-2.5 text-xs text-red-600 hover:bg-red-50 rounded-b-xl transition-colors"
+                className="text-xs cursor-pointer"
               >
                 Sign out
-              </button>
-            </div>
-          </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
