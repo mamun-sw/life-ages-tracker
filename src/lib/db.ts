@@ -1,0 +1,67 @@
+/**
+ * Data layer — all database operations live here.
+ * To swap Firestore for another DB (e.g. MongoDB Atlas), only edit this file.
+ */
+
+import {
+  collection,
+  doc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  setDoc,
+  getDoc,
+} from 'firebase/firestore'
+import { db } from './firebase'
+import type { TrackerItem, Category } from '../types'
+
+// ── Items ──────────────────────────────────────────────────────────────────
+
+export async function getItems(userId: string): Promise<TrackerItem[]> {
+  const q = query(
+    collection(db, 'users', userId, 'items'),
+    orderBy('createdAt', 'desc')
+  )
+  const snap = await getDocs(q)
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as TrackerItem))
+}
+
+export async function addItem(
+  userId: string,
+  item: Omit<TrackerItem, 'id'>
+): Promise<string> {
+  const ref = await addDoc(collection(db, 'users', userId, 'items'), item)
+  return ref.id
+}
+
+export async function updateItem(
+  userId: string,
+  itemId: string,
+  updates: Partial<TrackerItem>
+): Promise<void> {
+  await updateDoc(doc(db, 'users', userId, 'items', itemId), updates)
+}
+
+export async function deleteItem(userId: string, itemId: string): Promise<void> {
+  await deleteDoc(doc(db, 'users', userId, 'items', itemId))
+}
+
+// ── Categories ─────────────────────────────────────────────────────────────
+
+export async function getCategories(userId: string): Promise<Category[]> {
+  const snap = await getDoc(doc(db, 'users', userId, 'settings', 'categories'))
+  if (!snap.exists()) return []
+  return snap.data().list as Category[]
+}
+
+export async function saveCategories(
+  userId: string,
+  categories: Category[]
+): Promise<void> {
+  await setDoc(doc(db, 'users', userId, 'settings', 'categories'), {
+    list: categories,
+  })
+}
