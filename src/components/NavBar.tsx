@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
@@ -72,10 +73,12 @@ export function NavBar({ user, calendarMode, onToggleCalendar, onSignOut }: NavB
               )}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel className="flex-col items-start gap-0.5 px-3 py-2.5">
-                <p className="text-xs font-semibold text-foreground truncate">{user.displayName}</p>
-                <p className="text-[11px] text-muted-foreground truncate font-normal">{user.email}</p>
-              </DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="flex-col items-start gap-0.5 px-3 py-2.5">
+                  <p className="text-xs font-semibold text-foreground truncate">{user.displayName}</p>
+                  <p className="text-[11px] text-muted-foreground truncate font-normal">{user.email}</p>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
