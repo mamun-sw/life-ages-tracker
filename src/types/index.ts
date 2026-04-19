@@ -16,6 +16,7 @@ export interface TrackerItem {
   startDate: string // ISO date string YYYY-MM-DD (Gregorian input always)
   notes?: string
   createdAt: string
+  order?: number   // sparse integer for manual drag ordering (lazy-migrated)
 }
 
 export interface AgeResult {

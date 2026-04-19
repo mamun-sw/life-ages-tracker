@@ -1,8 +1,18 @@
 import { useState } from 'react'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Icon } from './ui/Icon'
 import { Button } from './ui/button'
 import { NavBar } from './NavBar'
-import { ItemCard } from './ItemCard'
+import { SortableItemCard } from './SortableItemCard'
 import { AddItemModal } from './AddItemModal'
 import { CategoryManager } from './CategoryManager'
 import { useItems } from '../hooks/useItems'
@@ -10,7 +20,7 @@ import { useCategories } from '../hooks/useCategories'
 import type { AppUser, CalendarMode } from '../types'
 
 const MAX_CATEGORIES = 10
-const COLLAPSE_THRESHOLD = 5 // show "show more" only when chips exceed this
+const COLLAPSE_THRESHOLD = 5
 
 interface DashboardProps {
   user: AppUser
@@ -24,10 +34,18 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
   const [showCatManager, setShowCatManager] = useState(false)
   const [showAllCats, setShowAllCats] = useState(false)
 
-  const { items, loading: itemsLoading, add, remove } = useItems(user.uid)
+  const { items, loading: itemsLoading, add, remove, reorder } = useItems(user.uid)
   const { categories, addCategory, removeCategory } = useCategories(user.uid)
 
-  // Cap at MAX_CATEGORIES
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
+    })
+  )
+
   const cappedCategories = categories.slice(0, MAX_CATEGORIES)
   const canCollapse = cappedCategories.length > COLLAPSE_THRESHOLD
   const visibleCategories = canCollapse && !showAllCats
@@ -38,6 +56,12 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
     filterCatId === 'all'
       ? items
       : items.filter(i => i.categoryId === filterCatId)
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    reorder(String(active.id), String(over.id))
+  }
 
   const handleAdd = async (data: {
     name: string
@@ -61,9 +85,8 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
 
       <main className="max-w-2xl mx-auto px-4 py-5 sm:py-6">
 
-        {/* Toolbar: actions row */}
+        {/* Toolbar */}
         <div className="flex items-center gap-2 mb-3">
-          {/* Settings button */}
           <Button
             variant="outline"
             size="sm"
@@ -75,7 +98,6 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
             <span className="text-xs font-medium">Categories</span>
           </Button>
 
-          {/* Add button — highlighted, pushed right */}
           <Button
             size="sm"
             onClick={() => setShowAddModal(true)}
@@ -86,7 +108,7 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
           </Button>
         </div>
 
-        {/* Category filter chips — wrapping, no scroll */}
+        {/* Category filter chips */}
         <div className="mb-5 sm:mb-6">
           <div className="flex flex-wrap gap-1.5">
             <button
@@ -155,20 +177,34 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
             </Button>
           </div>
         ) : (
-          <div className="space-y-2.5">
-            {filteredItems.map(item => (
-              <ItemCard
-                key={item.id}
-                item={item}
-                category={categories.find(c => c.id === item.categoryId)}
-                calendarMode={calendarMode}
-                onDelete={remove}
-              />
-            ))}
-            <p className="text-center text-[11px] text-muted-foreground/50 pt-3 pb-6">
-              {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'} · {calendarMode === 'gregorian' ? 'Gregorian' : 'Hijri'} calendar
-            </p>
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={filteredItems.map(i => i.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2.5">
+                {filteredItems.map(item => (
+                  <SortableItemCard
+                    key={item.id}
+                    item={item}
+                    category={categories.find(c => c.id === item.categoryId)}
+                    calendarMode={calendarMode}
+                    onDelete={remove}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
+
+        {filteredItems.length > 0 && (
+          <p className="text-center text-[11px] text-muted-foreground/50 pt-3 pb-6">
+            {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'} · {calendarMode === 'gregorian' ? 'Gregorian' : 'Hijri'} calendar
+          </p>
         )}
       </main>
 

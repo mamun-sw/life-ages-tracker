@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type React from 'react'
 import { Icon } from './ui/Icon'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
@@ -12,9 +13,11 @@ interface ItemCardProps {
   category: Category | undefined
   calendarMode: CalendarMode
   onDelete: (id: string) => void
+  dragHandleRef?: (node: HTMLElement | null) => void
+  dragHandleProps?: React.HTMLAttributes<HTMLElement>
 }
 
-export function ItemCard({ item, category, calendarMode, onDelete }: ItemCardProps) {
+export function ItemCard({ item, category, calendarMode, onDelete, dragHandleRef, dragHandleProps }: ItemCardProps) {
   const age = calculateAge(item.startDate, calendarMode)
   const upcoming = isUpcomingAnniversary(item.startDate)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -53,6 +56,18 @@ export function ItemCard({ item, category, calendarMode, onDelete }: ItemCardPro
 
           {/* Header row */}
           <div className="px-4 sm:px-5 pt-3.5 pb-3 flex items-start gap-3">
+            {/* Drag handle */}
+            {dragHandleRef && (
+              <button
+                ref={dragHandleRef}
+                {...dragHandleProps}
+                aria-label="Drag to reorder"
+                className="shrink-0 mt-1.5 cursor-grab active:cursor-grabbing touch-none text-muted-foreground/30 hover:text-muted-foreground/60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150"
+              >
+                <Icon name="grip-vertical" className="text-base" />
+              </button>
+            )}
+
             {/* Emoji avatar */}
             <div className="w-9 h-9 rounded-xl bg-muted border border-border/70 flex items-center justify-center text-base shrink-0 mt-0.5">
               {category?.emoji ?? '📌'}

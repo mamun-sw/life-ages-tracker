@@ -3,6 +3,7 @@ import { Button } from './ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
+import { DatePicker } from './ui/date-picker'
 import type { Category } from '../types'
 
 interface AddItemModalProps {
@@ -79,11 +80,11 @@ export function AddItemModal({ categories, onAdd, onClose }: AddItemModalProps) 
             <Label className="text-xs font-medium text-muted-foreground">
               Start date <span className="text-muted-foreground/40 font-normal">(Gregorian)</span>
             </Label>
-            <Input
-              type="date"
+            <DatePicker
               value={startDate}
+              onChange={setStartDate}
               max={today}
-              onChange={e => setStartDate(e.target.value)}
+              placeholder="Pick a start date"
             />
           </div>
 

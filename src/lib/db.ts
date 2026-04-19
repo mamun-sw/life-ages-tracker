@@ -14,6 +14,7 @@ import {
   orderBy,
   setDoc,
   getDoc,
+  writeBatch,
 } from 'firebase/firestore'
 import { db } from './firebase'
 import type { TrackerItem, Category } from '../types'
@@ -26,7 +27,16 @@ export async function getItems(userId: string): Promise<TrackerItem[]> {
     orderBy('createdAt', 'desc')
   )
   const snap = await getDocs(q)
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as TrackerItem))
+  const items = snap.docs.map(d => ({ id: d.id, ...d.data() } as TrackerItem))
+
+  // Sort client-side: ordered items (ascending) first, then legacy items
+  // (which already come from Firestore in createdAt desc order)
+  return items.sort((a, b) => {
+    if (a.order !== undefined && b.order !== undefined) return a.order - b.order
+    if (a.order !== undefined) return -1
+    if (b.order !== undefined) return 1
+    return 0
+  })
 }
 
 export async function addItem(
@@ -47,6 +57,25 @@ export async function updateItem(
 
 export async function deleteItem(userId: string, itemId: string): Promise<void> {
   await deleteDoc(doc(db, 'users', userId, 'items', itemId))
+}
+
+export async function reorderItem(
+  userId: string,
+  itemId: string,
+  newOrder: number
+): Promise<void> {
+  await updateDoc(doc(db, 'users', userId, 'items', itemId), { order: newOrder })
+}
+
+export async function batchUpdateOrders(
+  userId: string,
+  updates: Array<{ id: string; order: number }>
+): Promise<void> {
+  const batch = writeBatch(db)
+  for (const { id, order } of updates) {
+    batch.update(doc(db, 'users', userId, 'items', id), { order })
+  }
+  await batch.commit()
 }
 
 // ── Categories ─────────────────────────────────────────────────────────────
