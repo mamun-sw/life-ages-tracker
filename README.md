@@ -4,15 +4,15 @@ Track the age of everything that matters — people, gadgets, milestones, and mo
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19 + TypeScript 5.8 |
-| Build | Vite 6 |
-| Styling | Tailwind CSS 4 |
-| Auth | Firebase Auth 11 (Google Sign-In) |
-| Database | Firestore (Firebase Spark — free) |
-| Hosting | Vercel (free) |
-| CI/CD | GitHub Actions → auto-deploy on master push |
+| Layer    | Technology                                  |
+| -------- | ------------------------------------------- |
+| Frontend | React 19 + TypeScript 5.8                   |
+| Build    | Vite 6                                      |
+| Styling  | Tailwind CSS 4                              |
+| Auth     | Firebase Auth 11 (Google Sign-In)           |
+| Database | Firestore (Firebase Spark — free)           |
+| Hosting  | Vercel (free)                               |
+| CI/CD    | GitHub Actions → Vercel (preview + production) |
 
 ---
 
@@ -21,7 +21,7 @@ Track the age of everything that matters — people, gadgets, milestones, and mo
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/life-ages-tracker.git
+git clone https://github.com/mamun-sw/life-ages-tracker.git
 cd life-ages-tracker
 npm install
 ```
@@ -30,18 +30,23 @@ npm install
 
 1. Go to [Firebase Console](https://console.firebase.google.com)
 2. Click **Add project** → give it a name → Create
-3. In the project, go to **Authentication** → Get started → Enable **Google** sign-in
+3. Go to **Authentication** → Get started → Enable **Google** sign-in
 4. Go to **Firestore Database** → Create database → Start in **production mode** → choose a region
 5. Go to **Project Settings** → **Your apps** → click the web icon `</>` → Register app
 6. Copy the config values
 
 ### 3. Add environment variables
 
-```bash
-cp .env.example .env.local
-```
+Create a `.env.local` file in the project root:
 
-Fill in `.env.local` with your Firebase config values.
+```env
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+```
 
 ### 4. Run locally
 
@@ -55,37 +60,49 @@ Open [http://localhost:5173](http://localhost:5173)
 
 ## Deploying to Vercel
 
-### First-time setup
+### CI/CD via GitHub Actions (recommended)
 
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com) → New Project → Import your repo
-3. Add all environment variables from `.env.example` in the Vercel dashboard
-4. Deploy
+Every push to `master` runs lint → type-check → build → deploy to **production**.
+Every pull request deploys a **preview URL** posted back to the PR.
 
-### Auto-deploy on master push (GitHub Actions)
+Add these secrets to your GitHub repo under **Settings → Secrets and variables → Actions**:
 
-Add these secrets to your GitHub repo under **Settings → Secrets → Actions**:
+| Secret                              | Where to get it                                        |
+| ----------------------------------- | ------------------------------------------------------ |
+| `VERCEL_TOKEN`                      | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
+| `VERCEL_ORG_ID`                     | Run `vercel link` locally → check `.vercel/project.json` |
+| `VERCEL_PROJECT_ID`                 | Run `vercel link` locally → check `.vercel/project.json` |
+| `VITE_FIREBASE_API_KEY`             | Firebase project settings                              |
+| `VITE_FIREBASE_AUTH_DOMAIN`         | Firebase project settings                              |
+| `VITE_FIREBASE_PROJECT_ID`          | Firebase project settings                              |
+| `VITE_FIREBASE_STORAGE_BUCKET`      | Firebase project settings                              |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase project settings                              |
+| `VITE_FIREBASE_APP_ID`              | Firebase project settings                              |
 
-| Secret | Where to get it |
-|---|---|
-| `VERCEL_TOKEN` | Vercel → Account Settings → Tokens |
-| `VITE_FIREBASE_API_KEY` | Firebase project config |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase project config |
-| `VITE_FIREBASE_PROJECT_ID` | Firebase project config |
-| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase project config |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase project config |
-| `VITE_FIREBASE_APP_ID` | Firebase project config |
+Also add the 6 `VITE_FIREBASE_*` variables in the **Vercel dashboard** under Project → Settings → Environment Variables.
 
-Once set up, every push to `master` will:
-1. Lint the code
-2. Build the project
-3. Deploy to Vercel automatically
+### Manual one-time deploy
+
+```bash
+npm install -g vercel
+vercel link
+vercel --prod
+```
+
+---
+
+## Firebase: Authorized Domains
+
+After deploying, add your Vercel URL to Firebase's allowed list or sign-in will be blocked:
+
+1. Firebase Console → **Authentication → Settings → Authorized domains**
+2. Add `your-project.vercel.app`
 
 ---
 
 ## Firestore Security Rules
 
-In Firebase Console → Firestore → Rules, paste these rules to secure your data:
+In Firebase Console → Firestore → Rules, paste:
 
 ```
 rules_version = '2';
@@ -102,23 +119,16 @@ This ensures each user can only access their own data.
 
 ---
 
-## Switching the Database
-
-All database operations are in `src/lib/db.ts`. To migrate to MongoDB Atlas later:
-
-1. Install the MongoDB driver or use the Atlas Data API
-2. Rewrite only `src/lib/db.ts` — the functions stay the same (`getItems`, `addItem`, `deleteItem`, `getCategories`, `saveCategories`)
-3. Nothing else in the app changes
-
----
-
 ## Features
 
-- Google Sign-In only
+- Google Sign-In
 - Track people, gadgets, events, or any custom category
-- Age shown in Gregorian or Hijri (toggle anytime)
+- Age displayed in Gregorian or Hijri calendar (toggle anytime)
 - Date input is always Gregorian
-- Anniversary alert when an item's date is within 7 days
+- Anniversary alert when an item's date falls within 7 days
 - Custom categories with emoji picker
-- Per-user data storage in Firestore
-- Auto-deploy to Vercel on every master push
+- Filter by category
+- Per-user data stored in Firestore
+- Responsive — works on mobile and desktop
+- Dark mode support
+- CI/CD: preview deployments on PRs, production deploy on merge to `master`

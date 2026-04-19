@@ -52,9 +52,9 @@ export function ItemCard({ item, category, calendarMode, onDelete }: ItemCardPro
         <CardContent className="p-0">
 
           {/* Header row */}
-          <div className="px-4 sm:px-5 pt-4 pb-3 flex items-start gap-3">
+          <div className="px-4 sm:px-5 pt-3.5 pb-3 flex items-start gap-3">
             {/* Emoji avatar */}
-            <div className="w-9 h-9 rounded-xl bg-muted border border-border/70 flex items-center justify-center text-base shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-muted border border-border/70 flex items-center justify-center text-base shrink-0 mt-0.5">
               {category?.emoji ?? '📌'}
             </div>
 
@@ -84,6 +84,17 @@ export function ItemCard({ item, category, calendarMode, onDelete }: ItemCardPro
                 <p className="text-xs text-muted-foreground/60 mt-1 truncate">{item.notes}</p>
               )}
             </div>
+
+            {/* Delete button — top-right, hover-only on desktop, always on mobile */}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setConfirmOpen(true)}
+              className="shrink-0 -mt-0.5 -mr-1 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150"
+              title="Remove"
+            >
+              <Icon name="trash" className="text-sm" />
+            </Button>
           </div>
 
           {/* Age hero section */}
@@ -134,18 +145,6 @@ export function ItemCard({ item, category, calendarMode, onDelete }: ItemCardPro
                 {calendarMode === 'hijri' ? 'Hijri' : 'Gregorian'}
               </span>
             </div>
-          </div>
-
-          {/* Footer — always visible on touch, hover-only on desktop */}
-          <div className="px-3 sm:px-4 pb-3 flex justify-end sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={() => setConfirmOpen(true)}
-              className="text-destructive/60 hover:text-destructive hover:bg-destructive/10 text-[11px]"
-            >
-              Remove
-            </Button>
           </div>
 
         </CardContent>

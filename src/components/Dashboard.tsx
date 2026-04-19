@@ -9,6 +9,9 @@ import { useItems } from '../hooks/useItems'
 import { useCategories } from '../hooks/useCategories'
 import type { AppUser, CalendarMode } from '../types'
 
+const MAX_CATEGORIES = 10
+const COLLAPSE_THRESHOLD = 5 // show "show more" only when chips exceed this
+
 interface DashboardProps {
   user: AppUser
   onSignOut: () => void
@@ -19,9 +22,17 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
   const [filterCatId, setFilterCatId] = useState<string>('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showCatManager, setShowCatManager] = useState(false)
+  const [showAllCats, setShowAllCats] = useState(false)
 
   const { items, loading: itemsLoading, add, remove } = useItems(user.uid)
   const { categories, addCategory, removeCategory } = useCategories(user.uid)
+
+  // Cap at MAX_CATEGORIES
+  const cappedCategories = categories.slice(0, MAX_CATEGORIES)
+  const canCollapse = cappedCategories.length > COLLAPSE_THRESHOLD
+  const visibleCategories = canCollapse && !showAllCats
+    ? cappedCategories.slice(0, COLLAPSE_THRESHOLD)
+    : cappedCategories
 
   const filteredItems =
     filterCatId === 'all'
@@ -49,13 +60,38 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
       />
 
       <main className="max-w-2xl mx-auto px-4 py-5 sm:py-6">
-        {/* Filter chips + actions */}
-        <div className="flex items-center gap-2 mb-5 sm:mb-6">
-          {/* Scrollable chip row */}
-          <div className="flex items-center gap-2 overflow-x-auto flex-1 min-w-0 pb-0.5 no-scrollbar">
+
+        {/* Toolbar: actions row */}
+        <div className="flex items-center gap-2 mb-3">
+          {/* Settings button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCatManager(true)}
+            title="Manage categories"
+            className="gap-1.5 rounded-lg text-foreground/70 hover:text-foreground"
+          >
+            <Icon name="settings" className="text-sm" />
+            <span className="text-xs font-medium">Categories</span>
+          </Button>
+
+          {/* Add button — highlighted, pushed right */}
+          <Button
+            size="sm"
+            onClick={() => setShowAddModal(true)}
+            className="ml-auto rounded-full gap-1.5 bg-foreground hover:bg-foreground/90 text-background shadow-sm px-4"
+          >
+            <Icon name="plus" className="text-sm" />
+            <span className="text-xs font-medium">Add item</span>
+          </Button>
+        </div>
+
+        {/* Category filter chips — wrapping, no scroll */}
+        <div className="mb-5 sm:mb-6">
+          <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setFilterCatId('all')}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                 filterCatId === 'all'
                   ? 'bg-foreground border-foreground text-background'
                   : 'border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground bg-card'
@@ -63,11 +99,12 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
             >
               All
             </button>
-            {categories.map(cat => (
+
+            {visibleCategories.map(cat => (
               <button
                 key={cat.id}
                 onClick={() => setFilterCatId(cat.id)}
-                className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                   filterCatId === cat.id
                     ? 'bg-foreground border-foreground text-background'
                     : 'border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground bg-card'
@@ -77,27 +114,17 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
                 <span>{cat.label}</span>
               </button>
             ))}
-          </div>
 
-          {/* Action buttons — always visible, shrink-0 */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => setShowCatManager(true)}
-              title="Manage categories"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Icon name="settings" className="text-base" />
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setShowAddModal(true)}
-              className="rounded-full gap-1.5 bg-foreground hover:bg-foreground/90 text-background shadow-sm"
-            >
-              <Icon name="plus" className="text-sm" />
-              <span className="hidden xs:inline sm:inline">Add</span>
-            </Button>
+            {canCollapse && (
+              <button
+                onClick={() => setShowAllCats(v => !v)}
+                className="px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all"
+              >
+                {showAllCats
+                  ? 'Show less'
+                  : `+${cappedCategories.length - COLLAPSE_THRESHOLD} more`}
+              </button>
+            )}
           </div>
         </div>
 

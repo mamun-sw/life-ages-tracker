@@ -20,6 +20,7 @@ export function CategoryManager({ categories, onAdd, onRemove, onClose }: Catego
 
   const pendingRemoveCategory = categories.find(c => c.id === pendingRemoveId)
   const customCategories = categories.filter(c => !c.isPreset)
+  const atLimit = categories.length >= 10
 
   const handleAdd = async () => {
     if (!label.trim()) return
@@ -103,8 +104,13 @@ export function CategoryManager({ categories, onAdd, onRemove, onClose }: Catego
 
             {/* Add custom category */}
             <div>
-              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest mb-3">Add custom</p>
-              <div className="flex flex-wrap gap-1.5 mb-3">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest">Add custom</p>
+                {atLimit && (
+                  <p className="text-[10px] text-destructive/70">Max 10 categories reached</p>
+                )}
+              </div>
+              <div className={`flex flex-wrap gap-1.5 mb-3 ${atLimit ? 'opacity-40 pointer-events-none' : ''}`}>
                 {EMOJI_OPTIONS.map(e => (
                   <button
                     key={e}
@@ -123,13 +129,14 @@ export function CategoryManager({ categories, onAdd, onRemove, onClose }: Catego
                 <Input
                   value={label}
                   onChange={e => setLabel(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleAdd()}
-                  placeholder="Category name..."
+                  onKeyDown={e => e.key === 'Enter' && !atLimit && handleAdd()}
+                  placeholder={atLimit ? 'Category limit reached' : 'Category name...'}
+                  disabled={atLimit}
                   className="flex-1"
                 />
                 <Button
                   onClick={handleAdd}
-                  disabled={saving || !label.trim()}
+                  disabled={saving || !label.trim() || atLimit}
                   className="bg-foreground hover:bg-foreground/90 text-background"
                 >
                   Add

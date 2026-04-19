@@ -29,16 +29,16 @@ export function NavBar({ user, calendarMode, onToggleCalendar, onSignOut }: NavB
         <h1 className="font-serif text-xl text-foreground tracking-tight">Life Ages</h1>
 
         <div className="flex items-center gap-1.5">
-          {/* Calendar toggle — icon only on mobile, icon + label on sm+ */}
+          {/* Calendar toggle — always shows icon + label */}
           <Button
             variant="outline"
             size="sm"
             onClick={onToggleCalendar}
             title={`Switch to ${calendarMode === 'gregorian' ? 'Hijri' : 'Gregorian'}`}
-            className="gap-1.5 rounded-lg text-foreground/70 hover:text-foreground px-2 sm:px-3"
+            className="gap-1.5 rounded-lg text-foreground/70 hover:text-foreground px-2.5"
           >
             <Icon name={calendarMode === 'gregorian' ? 'calendar' : 'moon'} className="text-sm" />
-            <span className="hidden sm:inline uppercase tracking-wide text-[10px] font-semibold">
+            <span className="uppercase tracking-wide text-[10px] font-semibold">
               {calendarMode === 'gregorian' ? 'Gregorian' : 'Hijri'}
             </span>
           </Button>
